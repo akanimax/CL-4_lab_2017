@@ -1,0 +1,57 @@
+== Install MPICH on your VM ==
+
+You can do either a) easy package installtion of MPI2 
+OR b) build MPI3.
+
+You should only need MPI2 for the assignment.
+
+a) easy package installation of MPI2
+
+sudo yum install mpich2
+sudo yum install mpich2-devel
+sudo yum install mpich2-autoload
+
+
+b) OR build MPI3
+
+	download mpich
+		wget http://www.mpich.org/static/tarballs/3.0.2/mpich-3.0.2.tar.gz
+		tar xzf mpich-3.0.2.tar.gz
+
+	build mpich and install in home (can also see mpich-3.0.2/README)
+		cd mpich-3.0.2
+		 ./configure --prefix=$HOME/mpich-install 2>&1 | tee c.txt
+		 make 2>&1 | tee m.txt
+		 make install 2>&1 | tee mi.txt
+
+	put mpi binaries (e.g. mpicc, mpirun) on your PATH
+		add the following line to your ~/.bashrc:
+			export PATH=$PATH:~/mpich-install/bin
+		source ~/.bashrc
+
+== Run on your VM ==
+	compile hello world (from lecture)
+		mpicc helloworld.c -o helloworld
+	
+	run the program on 2 MPI processes
+		mpirun -np 2 -host localhost ./helloworld
+
+
+
+== run on the VM cluster (optional but fun!) ==
+
+	Note: MPI is already installed
+
+	login to one of the 8 compute nodes
+		ssh csep524-{01-08}.cs.washington.edu   # i.e. pick a number 01,02...,08
+
+	setup keys (mpirun will spawn processes though ssh, and you don't want to type your password every time!)
+		set up a private/public key in .ssh
+
+	compile hello world (from lecture)
+		mpicc helloworld.c -o helloworld
+
+	run the program on 2 MPI processes, on hosts csep524-01 and csep524-02
+		mpirun -hosts csep524-01,csep524-02 -np 2 ./helloworld 
+			
+	

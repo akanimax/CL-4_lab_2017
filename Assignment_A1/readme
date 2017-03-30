@@ -1,0 +1,3 @@
+assume you want to run mpitest.cpp file on remote machines given by hostfile
+
+so you should run ./copy.sh mpitest.cpp and then mpirun -np <no. of processes> --hostfile hostfile <path as given in copy.sh>/a.out

@@ -1,0 +1,262 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\title{Assignment No :A4}
+\date{}
+\author{Roll No.4431}
+
+
+\begin{document}
+\maketitle
+\section{Title:}
+Cluster time.
+
+\section{Problem Definition}
+Write a program on an unloaded cluster for several different numbers of nodes and record the time taken in each case. Draw a graph of execution time against the number of nodes.
+
+\section{Learning Objectives}
+\begin{enumerate}
+\item To understand the concept of clusters.
+\item To understand the latency issue in cluster computing.
+\item To be able to perform runtime analysis of a cluster computing system.
+\end{enumerate}
+
+\section{Learning Outcomes}
+\begin{enumerate}
+\item Ability to form unloaded clusters and perform required computations on them.
+\item Understanding of unloaded cluster computing.
+\end{enumerate}
+
+
+\section{Related Mathematics}
+Let S be the solution perspective of the given problem.
+\\\\The set S is defined as:
+\\\\$S=\lbrace\ s,e,X,Y,F,DD,NDD,S_{c},F_{c}|\varnothing_{s}\rbrace$
+\\\\Where,
+\\\\s= Start state,  Such that $Y=\lbrace \varnothing \rbrace$ 
+\\\\e= End state 
+\\\\X= Input Set.
+\\\\$X=\lbrace$ seq(x) $\mid$ x $\in$ Natural numbers $\rbrace$
+\\\\Y=Output set.
+\\\\$Y=\lbrace UnloadedClusterComputation \rbrace $
+\\\\F= Set of functions used.
+\\\\F=$\lbrace master(), slave(), compute(), timeAnalyse()\rbrace$
+\\\\master()= function for master purposes.
+\\\\slave()= function for slave purposes.
+\\\\compute()= function for computing the coverage of the input sequence.
+\\\\timeAnalyse()= function for performing the time analysis of the cluster computation.
+\\\\DD=Deterministic data.
+\\DD=
+\begin{enumerate}
+\item sequence follows proper constraints.
+\item coverage is defined and exists.
+\item sequence terminates.
+\end{enumerate}
+NDD= Non-deterministic data.
+\\NDD= $\cup$ - DD
+
+
+\section{State Transition diagram}
+\includegraphics[scale=0.30]{stdg.png}
+
+\section{Concepts related theory}
+\subsection{Clustering:} 
+\paragraph{} A computer cluster consists of a set of loosely or tightly connected computers that work together so that, in many respects, they can be viewed as a single system. Unlike grid computers, computer clusters have each node set to perform the same task, controlled and scheduled by software. 
+
+\paragraph{} The components of a cluster are usually connected to each other through fast local area networks ("LAN"), with each node (computer used as a server) running its own instance of an operating system. In most circumstances, all of the nodes use the same hardware and the same operating system, although in some setups (i.e. using Open Source Cluster Application Resources (OSCAR)), different operating systems can be used on each computer, and/or different hardware. \\
+
+\includegraphics[width = \textwidth]{clustertime_diag}
+		
+\paragraph{} They are usually deployed to improve performance and availability over that of a single computer, while typically being much more cost-effective than single computers of comparable speed or availability. 
+
+\paragraph{} Computer clusters emerged as a result of convergence of a number of computing trends including the availability of low-cost microprocessors, high speed networks, and software for high-performance distributed computing. They have a wide range of applicability and deployment, ranging from small business clusters with a handful of nodes to some of the fastest supercomputers in the world such as IBM's Sequoia. The applications that can be done however, are nonetheless limited, since the software needs to be purpose-built per task. It is hence not possible to use computer clusters for casual computing tasks. 
+
+\paragraph{} A computer cluster may be a simple two-node system which just connects two personal computers, or may be a very fast supercomputer. A basic approach to building a cluster is that of a Beowulf cluster which may be built with a few personal computers to produce a cost-effective alternative to traditional high performance computing. An early project that showed the viability of the concept was the 133-node Stone Supercomputer. The developers used Linux, the Parallel Virtual Machine toolkit and the Message Passing Interface library to achieve high performance at a relatively low cost. 
+
+\subsection{MPI: }
+\paragraph{} MPI is a language-independent communications protocol used for programming parallel computers. Both point-to-point and collective communication are supported. MPI "is a message-passing application programmer interface, together with protocol and semantic specifications for how its features must behave in any implementation." MPI's goals are high performance, scalability, and portability. MPI remains the dominant model used in highperformance computing today. \\
+\includegraphics[width = \textwidth]{clustertime_diag2}
+\paragraph{} MPI is not sanctioned by any major standards body; nevertheless, it has become a de facto standard for communication among processes that model a parallel program running on a distributed memory system. Actual distributed memory supercomputers such as computer clusters often run such programs. The principal MPI-1 model has no shared memory concept, and MPI-2 has only a limited distributed shared memory concept. Nonetheless, MPI programs are regularly run on shared memory computers. Designing programs around the MPI model (contrary to explicit shared memory models) has advantages over NUMA archi tectures since MPI encourages memory locality. 
+\paragraph{} Although MPI belongs in layers 5 and higher of the OSI Reference Model, implementations may cover most layers, with sockets and Transmission Control Protocol (TCP) used in the transport layer. 
+\paragraph{} Most MPI implementations consist of a specific set of routines (i.e., an API) directly callable from C, C++, Fortran and any language able to interface with such libraries, including C\#, Java or Python. The advantages of MPI over older message passing libraries are portability (because MPI has been implemented for almost every distributed memory architecture) and speed (because each implementation is in principle optimized for the hardware on which it runs). 
+\paragraph{} MPI uses Language Independent Specifications (LIS) for calls and language bindings. The first MPI standard specified ANSI C and Fortran-77 bindings together with the LIS. The draft was presented at Supercomputing 1994 (November 1994) and finalized soon thereafter. About 128 functions constitute the MPI-1.3 standard which was released as the final end of the MPI-1 series in 2008.
+
+\section{Program Listing}
+\begin{lstlisting}
+// Prime_mpi.c
+# include <stdlib.h>
+# include <stdio.h>
+# include <math.h>
+# include <time.h>
+
+# include "mpi.h"
+
+int main ( int argc, char *argv[] );
+int prime_number ( int n, int id, int p );
+void timestamp ( void );
+
+int main ( int argc, char *argv[] )
+{
+  int i;
+  int id;
+  int ierr;
+  int n;
+  int n_factor;
+  int n_hi;
+  int n_lo;
+  int p;
+  int primes;
+  int primes_part;
+  double wtime;
+
+  n_lo = 1;
+  n_hi = 262144;
+  n_factor = 2;
+
+  ierr = MPI_Init ( &argc, &argv );
+
+  ierr = MPI_Comm_size ( MPI_COMM_WORLD, &p );
+
+  ierr = MPI_Comm_rank ( MPI_COMM_WORLD, &id );
+
+  if ( id == 0 )
+  {
+    timestamp ( );
+    printf ( "\n" );
+    printf ( "PRIME_MPI\n" );
+    printf ( "  C/MPI version\n" );
+    printf ( "\n" );
+    printf ( "  An MPI example program to count the number of primes.\n" );
+    printf ( "  The number of processes is %d\n", p );
+    printf ( "\n" );
+    printf ( "         N        Pi          Time\n" );
+    printf ( "\n" );
+  }
+
+  n = n_lo;
+
+  while ( n <= n_hi )
+  {
+    if ( id == 0 )
+    {
+      wtime = MPI_Wtime ( );
+    }
+    ierr = MPI_Bcast ( &n, 1, MPI_INT, 0, MPI_COMM_WORLD );
+
+    primes_part = prime_number ( n, id, p );
+
+    ierr = MPI_Reduce ( &primes_part, &primes, 1, MPI_INT, MPI_SUM, 0, 
+      MPI_COMM_WORLD );
+
+    if ( id == 0 )
+    {
+      wtime = MPI_Wtime ( ) - wtime;
+      printf ( "  %8d  %8d  %14f\n", n, primes, wtime );
+    }
+    n = n * n_factor;
+  }
+
+  ierr = MPI_Finalize ( );
+
+  if ( id == 0 ) 
+  {
+    printf ( "\n");         
+    printf ( "PRIME_MPI - Master process:\n");         
+    printf ( "  Normal end of execution.\n"); 
+    printf ( "\n" );
+    timestamp ( );        
+  }
+
+  return 0;
+}
+
+int prime_number ( int n, int id, int p )
+{
+  int i;
+  int j;
+  int prime;
+  int total;
+
+  total = 0;
+
+  for ( i = 2 + id; i <= n; i = i + p )
+  {
+    prime = 1;
+    for ( j = 2; j < i; j++ )
+    {
+      if ( ( i % j ) == 0 )
+      {
+        prime = 0;
+        break;
+      }
+    }
+    total = total + prime;
+  }
+  return total;
+}
+
+
+void timestamp ( void )
+{
+# define TIME_SIZE 40
+
+  static char time_buffer[TIME_SIZE];
+  const struct tm *tm;
+  size_t len;
+  time_t now;
+
+  now = time ( NULL );
+  tm = localtime ( &now );
+
+  len = strftime ( time_buffer, TIME_SIZE, "%d %B %Y %I:%M:%S %p", tm );
+
+  printf ( "%s\n", time_buffer );
+
+  return;
+# undef TIME_SIZE
+}
+
+
+// sample.sh
+#!/bin/sh
+cp /dev/null output.txt
+
+itr=1
+while [ $itr -le 5 ]
+do
+mpicc -o  prime_MPI  prime_MPI.c
+mpirun ./prime_MPI | awk 'FNR==29 {print $3}' >> output.txt
+ itr=`expr $itr + 1`
+done
+quickplot output.txt
+
+\end{lstlisting}
+
+
+\section{Output}
+\begin{lstlisting}
+botman@botmatrix:~$ ./sample.sh
+9.839158
+9.823411
+9.819855
+9.821641
+9.820960
+
+\end{lstlisting}
+
+\section{TESTING :}
+\subsection{Positive Testing}
+\includegraphics[width = \textwidth]{clustertime_positive}
+\subsection{Negative Testing}
+\includegraphics[width = \textwidth]{clustertime_negative}
+
+			
+\section{CONCLUSION : }
+	Thus we studied concept of clustering, which consists of a set of loosely or tightly connected computers that work together and created a program on an unloaded cluster for several different numbers of nodes and record the time taken in each case. 
+
+\end{document}
